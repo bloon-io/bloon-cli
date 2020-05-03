@@ -2,7 +2,7 @@
 
 APP_PATH=$(dirname "$(realpath "$0")")
 cd $APP_PATH/..
-BLOON_CLI_HOME=$PWD
+export BLOON_CLI_HOME=$PWD
 # --------------------------------------------------
 . ./lib/bash/cli-func-cmd.sh # load cmd
 . ./lib/bash/cli-func-help.sh # load help
