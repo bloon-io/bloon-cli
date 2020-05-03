@@ -10,7 +10,3 @@ cat << EOF > /etc/profile.d/bloon-path.sh
 export BLOON_CLI_HOME=$BLOON_CLI_HOME
 export PATH=\$BLOON_CLI_HOME/bin:\$PATH
 EOF
-
-# --------------------------------------------------
-/etc/profile.d/bloon-path.sh
-/etc/bash_completion.d/bloon-completion.sh
