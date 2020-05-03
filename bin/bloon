@@ -1,0 +1,138 @@
+#!/bin/bash
+
+APP_PATH=$(dirname "$(realpath "$0")")
+cd $APP_PATH/..
+BLOON_CLI_HOME=$PWD
+# --------------------------------------------------
+. ./lib/bash/cli-func-cmd.sh # load cmd
+. ./lib/bash/cli-func-help.sh # load help
+# --------------------------------------------------
+COMMAND=0
+SUB_COMMAND=0
+TO_SHOW_VERSION=0
+TO_SHOW_HELP=0
+TO_SHOW_PROFILE_PHOTO=0
+ARGS=()
+
+# --------------------------------------------------
+
+if [ $# == 0 ]; then
+    clifunc__print_help_global
+    exit 0
+fi
+
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    
+    # if $arg not starts with "-", which means it's a COMMAND
+    if ! [[ $arg =~ [$^-] ]]; then
+        if [ $COMMAND == 0 ]; then 
+            COMMAND="$arg"
+        elif [ $SUB_COMMAND == 0 ] \
+            && [[ "$COMMAND" =~ ^(account|bloon|space|sharelink|directlink)$ ]]; # COMMANDs with SUB_COMMAND
+            then
+            SUB_COMMAND="$arg"
+        else
+            ARGS+=( "$arg" )
+        fi
+        shift
+        continue
+    fi
+
+    case $arg in
+        --photo) # only for 'bloon account detail'
+            TO_SHOW_PROFILE_PHOTO=1
+            shift
+        ;;
+        -v|--version)
+            TO_SHOW_VERSION=1
+            shift
+        ;;
+        -h|--help)
+            TO_SHOW_HELP=1
+            shift
+        ;;
+        *) # any other COMMAND or OPTIONS
+            shift
+        ;;
+    esac
+done
+
+# echo 
+# echo "[debug] COMMAND: "$COMMAND
+# echo "[debug] SUB_COMMAND: "$SUB_COMMAND
+# echo "[debug] TO_SHOW_VERSION: "$TO_SHOW_VERSION
+# echo "[debug] TO_SHOW_HELP: "$TO_SHOW_HELP
+# echo "[debug] TO_SHOW_PROFILE_PHOTO: "$TO_SHOW_PROFILE_PHOTO
+# echo "[debug] ARGS: "${ARGS[@]}
+# echo 
+
+# --------------------------------------------------
+# if there is a COMMAND
+if [ $COMMAND != 0 ]; then
+    case $COMMAND in
+        start|status|stop|login|logout|install|upgrade)
+            if [ $TO_SHOW_HELP == 1 ]; then
+                eval "clifunc__print_help_$COMMAND"
+            else
+                eval "clifunc__cmd_$COMMAND" ${ARGS[@]}
+            fi
+        ;;
+        account)
+            case $SUB_COMMAND in
+                login|logout|current|detail)
+                    if [ $TO_SHOW_HELP == 1 ]; then
+                        eval "clifunc__print_help_account_$SUB_COMMAND"
+                    else
+                        eval "clifunc__cmd_account_$SUB_COMMAND" ${ARGS[@]}
+                    fi
+                ;;
+                *)
+                    clifunc__print_help_account
+                ;;
+            esac
+        ;;
+        space)
+            case $SUB_COMMAND in
+                ls)
+                    if [ $TO_SHOW_HELP == 1 ]; then
+                        eval "clifunc__print_help_space_$SUB_COMMAND"
+                    else
+                        eval "clifunc__cmd_space_$SUB_COMMAND" ${ARGS[@]}
+                    fi
+                ;;
+                *)
+                    clifunc__print_help_space
+                ;;
+            esac
+        ;;
+        bloon)
+            case $SUB_COMMAND in
+                ls)
+                    if [ $TO_SHOW_HELP == 1 ]; then
+                        eval "clifunc__print_help_bloon_$SUB_COMMAND"
+                    else
+                        eval "clifunc__cmd_bloon_$SUB_COMMAND" ${ARGS[@]}
+                    fi
+                ;;
+                *)
+                    clifunc__print_help_bloon
+                ;;
+            esac
+        ;;
+        *)
+            echo >&2 "[bloon] '$COMMAND' is not a bloon command."
+            echo >&2 "[bloon] See 'bloon --help'"
+        ;;
+    esac
+else
+    if [ $TO_SHOW_VERSION == 1 ]; then
+        clifunc__show_version
+    elif [ $TO_SHOW_HELP == 1 ]; then
+        clifunc__print_help_global
+    else
+        clifunc__print_help_global
+    fi
+fi
+
+
